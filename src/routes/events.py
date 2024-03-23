@@ -24,7 +24,7 @@ class EventUpdate(Event):
 
 class Interested(BaseModel):
     club_id: UUID4
-    author: str
+    interestee: str
 
 
 router = APIRouter(
@@ -106,17 +106,23 @@ async def update_event(event: EventUpdate, res: Response):
 async def toggle_interested(event_id: str, interested: Interested, res: Response):
     '''Add a user to the interested list'''
     try:
-        current_interest = pg_interested.select().where(pg_interested.event_id == event_id, pg_interested.club_id == interested.club_id).delete()
+        pg_event.select().where(pg_event.event_id == event_id).get()
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Event not found'}
+    try:
+        current_interest = pg_interested.select().where(pg_interested.event_id == event_id, pg_interested.club_id == interested.club_id).get()
         current_interest.delete_instance()
+        return {'message': 'Interest removed'}
     except DoesNotExist:
         pass
     try:
         interested = pg_interested.create(
             event_id=event_id,
             club_id=interested.club_id,
-            interestee=interested.author
+            interestee=interested.interestee
         )
         return {'interested': interested.__data__}
-    except DoesNotExist:
-        res.status_code = 404
-        return {'message': 'Event not found'}
+    except IntegrityError:
+        res.status_code = 500
+        return
