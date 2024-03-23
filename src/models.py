@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 import datetime
-from peewee import Model, TextField, DateTimeField, PostgresqlDatabase, UUIDField
+from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey
 
 config = dotenv_values()
 db = PostgresqlDatabase(
@@ -27,12 +27,12 @@ class Affiliation(BaseModel):
 
 
 class User(BaseModel):
-    username = TextField()
+    username = TextField(primary_key=True)
     password = TextField()
 
 
 class Post(BaseModel):
-    post_id = UUIDField()
+    post_id = UUIDField(primary_key=True)
     author = TextField()
     title = TextField()
     content = TextField()
@@ -40,7 +40,7 @@ class Post(BaseModel):
 
 
 class Comments(BaseModel):
-    comment_id = UUIDField()
+    comment_id = UUIDField(primary_key=True)
     post_id = UUIDField()
     author = TextField()
     content = TextField()
@@ -48,7 +48,7 @@ class Comments(BaseModel):
 
 
 class Event(BaseModel):
-    event_id = UUIDField()
+    event_id = UUIDField(primary_key=True)
     club_id = UUIDField()
     author = TextField()
     title = TextField()
@@ -61,6 +61,9 @@ class Interested(BaseModel):
     event_id = UUIDField()
     club_id = UUIDField()
     interestee = TextField()
+
+    class Meta:
+        primary_key = CompositeKey('event_id', 'club_id')
 
 
 db.create_tables([Club, Affiliation, User, Post, Comments, Event, Interested])
