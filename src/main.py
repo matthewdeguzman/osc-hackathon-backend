@@ -3,7 +3,6 @@ import uvicorn
 
 import models
 from routes import login, club, post
-from routes import login, post
 
 app = FastAPI()
 
