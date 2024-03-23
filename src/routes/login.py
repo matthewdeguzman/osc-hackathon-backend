@@ -41,7 +41,7 @@ async def sign_in(user: UserSignIn, res: Response):
         return {"message": "Invalid username or password"}
 
     try:
-        affiliations = pg_affiliation.select().where(pg_affiliation.username == user.username).get()
-        return {"affiliations": affiliations}
+        affiliations = pg_affiliation.select().where(pg_affiliation.username == user.username).dicts()
+        return {"affiliations": list(affiliations)}
     except DoesNotExist:
         return []

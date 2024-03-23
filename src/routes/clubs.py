@@ -23,7 +23,7 @@ router = APIRouter(
 def get_clubs():
     """Get all clubs"""
     clubs = pg_club.select().dicts()
-    return list(clubs)
+    return {'clubs': list(clubs)}
 
 
 @router.post('/create')
@@ -79,8 +79,7 @@ async def request_club_join(res: Response, club_id: str, username: Username):
             request_id=uuid4(),
             club_id=club_id,
             username=username.username)
-    except IntegrityError as e:
-        print(e)
+    except IntegrityError:
         res.status_code = 404
         return {'message': 'Already requested or club does not exist'}
 
@@ -96,7 +95,7 @@ async def get_club_requests(res: Response, club_id: str):
         res.status_code = 404
         return {'message': 'Invalid club id'}
 
-    return list(join_requests)
+    return {'requests': list(join_requests)}
 
 
 @router.post('/{club_id}/requests/{request_id}/accept')
