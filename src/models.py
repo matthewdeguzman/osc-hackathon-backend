@@ -17,13 +17,16 @@ class BaseModel(Model):
 
 
 class Club(BaseModel):
-    club_id = UUIDField()
+    club_id = UUIDField(primary_key=True)
     club_name = TextField()
 
 
 class Affiliation(BaseModel):
     username = TextField()
     club_id = UUIDField()
+
+    class Meta:
+        primary_key = CompositeKey('username', 'club_id')
 
 
 class User(BaseModel):
