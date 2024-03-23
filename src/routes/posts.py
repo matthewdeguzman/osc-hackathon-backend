@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from uuid import uuid4
 from peewee import DoesNotExist
 
-from models import Post as PG_Post, Comment as PG_Comment
+from models import Post as pg_post, Comment as pg_comment
 
 router = APIRouter(
     prefix='/posts'
@@ -26,7 +26,7 @@ class CommentCreate(BaseModel):
 @router.post('/')
 async def create_post(post: PostCreate, res: Response):
     try:
-        created_post = PG_Post.create(post_id=uuid4(), **post.dict())
+        created_post = pg_post.create(post_id=uuid4(), **post.dict())
         return created_post.__data__
     except Exception as e:
         res.status_code = 500
@@ -36,7 +36,7 @@ async def create_post(post: PostCreate, res: Response):
 @router.get('/')
 async def get_posts(res: Response, community: str = ''):
     try:
-        posts = PG_Post.select().where(PG_Post.community == community).dicts()
+        posts = pg_post.select().where(pg_post.community == community).dicts()
         return list(posts)
     except Exception as e:
         res.status_code = 500
@@ -46,7 +46,7 @@ async def get_posts(res: Response, community: str = ''):
 @router.post('/{post_id}/comment')
 async def create_comment(post_id: str, comment: CommentCreate, res: Response):
     try:
-        created_comment = PG_Comment.create(comment_id=uuid4(), post_id=post_id, **comment.dict())
+        created_comment = pg_comment.create(comment_id=uuid4(), post_id=post_id, **comment.dict())
         return created_comment.__data__
     except Exception as e:
         res.status_code = 500
@@ -56,8 +56,8 @@ async def create_comment(post_id: str, comment: CommentCreate, res: Response):
 @router.get('/{post_id}')
 async def get_post(res: Response, post_id: str):
     try:
-        post = PG_Post.select().where(PG_Post.post_id == post_id).dicts().get()
-        comments = PG_Comment.select().where(PG_Comment.post_id == post_id).dicts()
+        post = pg_post.select().where(pg_post.post_id == post_id).dicts().get()
+        comments = pg_comment.select().where(pg_comment.post_id == post_id).dicts()
         post['comments'] = list(comments)
         return post
     except DoesNotExist:
