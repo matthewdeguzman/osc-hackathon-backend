@@ -17,8 +17,8 @@ class BaseModel(Model):
 
 
 class Club(BaseModel):
-    club_id = UUIDField()
-    club_name = TextField(primary_key=True)
+    club_id = UUIDField(primary_key=True)
+    club_name = TextField(unique=True)
 
 class Affiliation(BaseModel):
     username = TextField()
@@ -41,7 +41,7 @@ class Post(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
 
 
-class Comments(BaseModel):
+class Comment(BaseModel):
     comment_id = UUIDField(primary_key=True)
     post_id = UUIDField()
     author = TextField()
@@ -56,7 +56,9 @@ class Event(BaseModel):
     title = TextField()
     description = TextField()
     created_at = DateTimeField(default=datetime.datetime.now)
-    event_date = DateTimeField()
+    event_start = DateTimeField()
+    event_end = DateTimeField()
+    community = TextField(null=True)
 
 
 class Interested(BaseModel):
@@ -68,4 +70,4 @@ class Interested(BaseModel):
         primary_key = CompositeKey('event_id', 'club_id')
 
 
-db.create_tables([Club, Affiliation, User, Post, Comments, Event, Interested])
+db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested])
