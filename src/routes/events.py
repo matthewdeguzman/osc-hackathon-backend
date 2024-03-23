@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from uuid import uuid4
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from pydantic import UUID4, BaseModel
-from peewee import DoesNotExist
+from peewee import DoesNotExist, IntegrityError
 
-from models import Event as PG_event
+from models import Event as pg_event, Club as pg_club
 
 
 class Event(BaseModel):
@@ -18,6 +18,10 @@ class Event(BaseModel):
     community: str | None = None
 
 
+class EventUpdate(Event):
+    event_id: UUID4
+
+
 router = APIRouter(
     prefix='/events'
 )
@@ -26,25 +30,67 @@ router = APIRouter(
 @router.post('/create')
 async def create(user: Event):
     """Create a new event"""
-    db_event = PG_event.create(
-        event_id=uuid4(),
-        **user.model_dump()
-    )
-    return {'message': 'success', 'event': db_event.__data__}
+    try:
+        db_event = pg_event.create(
+            event_id=uuid4(),
+            **user.model_dump()
+        )
+    except IntegrityError:
+        return {'message': 'club does not exist'}
+
+    return {'event': db_event.__data__}
 
 
 @router.get("/id/{event_id}")
 async def get_event(event_id: str):
     """Get event by event_id"""
     try:
-        event = PG_event.select().where(PG_event.event_id == event_id).get()
+        event = pg_event.select().where(pg_event.event_id == event_id).get()
     except DoesNotExist:
         return {'message': 'Event not found'}
-    return event.__data__
+    return {'event': event.__data__}
 
 
 @router.get("/club_id/{club_id}")
-async def get_club_events(club_id: str):
+async def get_club_events_id(club_id: str, res: Response):
     """Get all events for a club"""
-    events = PG_event.select().where(PG_event.club_id == club_id)
-    return [event.__data__ for event in events]
+    try:
+        events = pg_event.select().where(pg_event.club_id == club_id)
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Club not found'}
+    return {"events": [event.__data__ for event in events]}
+
+
+@router.get("/club_name/{club_name}")
+async def get_club_events_by_name(club_name: str, res: Response):
+    """Get all events for a club"""
+    try:
+        club_id = pg_club.select().where(pg_club.club_name == club_name).get().club_id
+        print(club_id)
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Club name not found'}
+    try:
+        events = pg_event.select().where(pg_event.club_id == club_id)
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Club id not found'}
+
+    return {"events": [event.__data__ for event in events]}
+
+@router.put("/update/")
+async def update_event(event: EventUpdate, res: Response):
+    """Update an event"""
+    try:
+        db_event = pg_event.select().where(pg_event.event_id == event.event_id).get()
+        db_event.title = event.title
+        db_event.description = event.description
+        db_event.event_start = event.event_start
+        db_event.event_end = event.event_end
+        db_event.community = event.community
+        db_event.save()
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Event not found'}
+    return {'event': db_event.__data__}

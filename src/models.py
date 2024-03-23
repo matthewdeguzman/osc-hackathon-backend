@@ -54,7 +54,7 @@ class Comment(BaseModel):
 
 class Event(BaseModel):
     event_id = UUIDField(primary_key=True)
-    club_id = UUIDField()
+    club_id = ForeignKeyField(Club, backref="events")
     author = TextField()
     title = TextField()
     description = TextField()
