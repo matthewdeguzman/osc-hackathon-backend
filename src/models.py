@@ -1,13 +1,14 @@
 from dotenv import dotenv_values
 import datetime
-from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey
+from peewee import Model, PostgresqlDatabase, SQL, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
 
 config = dotenv_values()
 db = PostgresqlDatabase(
-        config['POSTGRES_DB_NAME'],
-        user=config['POSTGRES_USERNAME'],
-        password=config['POSTGRES_PASSWORD'],
-        host=config['POSTGRES_HOST'])
+    config["POSTGRES_DB_NAME"],
+    user=config["POSTGRES_USERNAME"],
+    password=config["POSTGRES_PASSWORD"],
+    host=config["POSTGRES_HOST"],
+)
 db.connect()
 
 
@@ -20,12 +21,13 @@ class Club(BaseModel):
     club_id = UUIDField(primary_key=True)
     club_name = TextField(unique=True)
 
+
 class Affiliation(BaseModel):
     username = TextField()
     club_id = UUIDField()
 
     class Meta:
-        primary_key = CompositeKey('username', 'club_id')
+        primary_key = CompositeKey("username", "club_id")
 
 
 class User(BaseModel):
@@ -38,12 +40,13 @@ class Post(BaseModel):
     author = TextField()
     title = TextField()
     content = TextField()
+    community = TextField(null=True)
     created_at = DateTimeField(default=datetime.datetime.now)
 
 
 class Comment(BaseModel):
     comment_id = UUIDField(primary_key=True)
-    post_id = UUIDField()
+    post_id = ForeignKeyField(Post, backref="comments")
     author = TextField()
     content = TextField()
     created_at = DateTimeField(default=datetime.datetime.now)
@@ -67,7 +70,15 @@ class Interested(BaseModel):
     interestee = TextField()
 
     class Meta:
-        primary_key = CompositeKey('event_id', 'club_id')
+        primary_key = CompositeKey("event_id", "club_id")
 
 
-db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested])
+class JoinRequest(BaseModel):
+    club_id = ForeignKeyField(Club, backref="join_requests")
+    username = ForeignKeyField(User, backref="join_requests")
+
+    class Meta:
+        primary_key = CompositeKey("club_id", "username")
+
+
+db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested, JoinRequest])
