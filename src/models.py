@@ -17,9 +17,8 @@ class BaseModel(Model):
 
 
 class Club(BaseModel):
-    club_id = UUIDField(primary_key=True)
-    club_name = TextField()
-
+    club_id = UUIDField()
+    club_name = TextField(primary_key=True)
 
 class Affiliation(BaseModel):
     username = TextField()
