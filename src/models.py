@@ -2,7 +2,7 @@ from dotenv import dotenv_values
 import datetime
 from peewee import Model, TextField, DateTimeField, PostgresqlDatabase, UUIDField
 
-config = dotenv_values('../.env')
+config = dotenv_values()
 db = PostgresqlDatabase(
         config['POSTGRES_DB_NAME'],
         user=config['POSTGRES_USERNAME'],
