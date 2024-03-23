@@ -41,32 +41,32 @@ async def create(user: Event):
     return {'event': db_event.__data__}
 
 
-@router.get("/id/{event_id}")
-async def get_event(event_id: str):
+@router.get("/event_id/")
+async def get_event(id: str):
     """Get event by event_id"""
     try:
-        event = pg_event.select().where(pg_event.event_id == event_id).get()
+        event = pg_event.select().where(pg_event.event_id == id).get()
     except DoesNotExist:
         return {'message': 'Event not found'}
     return {'event': event.__data__}
 
 
-@router.get("/club_id/{club_id}")
-async def get_club_events_id(club_id: str, res: Response):
+@router.get("/club_id")
+async def get_club_by_events_id(id: str, res: Response):
     """Get all events for a club"""
     try:
-        events = pg_event.select().where(pg_event.club_id == club_id)
+        events = pg_event.select().where(pg_event.club_id == id)
     except DoesNotExist:
         res.status_code = 404
         return {'message': 'Club not found'}
     return {"events": [event.__data__ for event in events]}
 
 
-@router.get("/club_name/{club_name}")
-async def get_club_events_by_name(club_name: str, res: Response):
+@router.get("/club_name")
+async def get_club_events_by_name(name: str, res: Response):
     """Get all events for a club"""
     try:
-        club_id = pg_club.select().where(pg_club.club_name == club_name).get().club_id
+        club_id = pg_club.select().where(pg_club.club_name == name).get().club_id
         print(club_id)
     except DoesNotExist:
         res.status_code = 404
@@ -79,7 +79,8 @@ async def get_club_events_by_name(club_name: str, res: Response):
 
     return {"events": [event.__data__ for event in events]}
 
-@router.put("/update/")
+
+@router.put("/update")
 async def update_event(event: EventUpdate, res: Response):
     """Update an event"""
     try:
@@ -94,3 +95,10 @@ async def update_event(event: EventUpdate, res: Response):
         res.status_code = 404
         return {'message': 'Event not found'}
     return {'event': db_event.__data__}
+
+
+@router.get("/community")
+async def get_by_community(community: str):
+    """Get events by community"""
+    events = pg_event.select().where(pg_event.community == community)
+    return {"events": [event.__data__ for event in events]}
