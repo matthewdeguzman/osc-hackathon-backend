@@ -70,4 +70,12 @@ class Interested(BaseModel):
         primary_key = CompositeKey('event_id', 'club_id')
 
 
-db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested])
+class JoinRequest(BaseModel):
+    club_id = UUIDField()
+    username = TextField()
+
+    class Meta:
+        primary_key = CompositeKey('club_id', 'username')
+
+
+db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested, JoinRequest])
