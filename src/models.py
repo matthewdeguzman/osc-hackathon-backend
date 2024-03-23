@@ -33,6 +33,8 @@ class Affiliation(BaseModel):
 class User(BaseModel):
     username = TextField(primary_key=True)
     password = TextField()
+    first_name = TextField()
+    last_name = TextField()
 
 
 class Post(BaseModel):
