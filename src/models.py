@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 import datetime
-from peewee import Model, PostgresqlDatabase, SQL, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
+from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
 
 config = dotenv_values()
 db = PostgresqlDatabase(
