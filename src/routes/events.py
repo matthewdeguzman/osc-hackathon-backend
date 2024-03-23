@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from uuid import uuid4
 from datetime import datetime
-from fastapi import APIRouter, Response
+from fastapi import APIRouter
 from pydantic import UUID4, BaseModel
 from peewee import DoesNotExist
 
 from models import Event as PG_event
+
 
 class Event(BaseModel):
     club_id: UUID4
@@ -16,9 +17,11 @@ class Event(BaseModel):
     event_end: datetime
     community: str | None = None
 
+
 router = APIRouter(
     prefix='/events'
 )
+
 
 @router.post('/create')
 async def create(user: Event):
@@ -29,6 +32,7 @@ async def create(user: Event):
     )
     return {'message': 'success', 'event': db_event.__data__}
 
+
 @router.get("/id/{event_id}")
 async def get_event(event_id: str):
     """Get event by event_id"""
@@ -37,6 +41,7 @@ async def get_event(event_id: str):
     except DoesNotExist:
         return {'message': 'Event not found'}
     return event.__data__
+
 
 @router.get("/club_id/{club_id}")
 async def get_club_events(club_id: str):

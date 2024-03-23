@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
-from typing import Annotated
 from uuid import uuid4
 from peewee import DoesNotExist, IntegrityError
 from pydantic import BaseModel
-from fastapi import APIRouter, Response, Body
+from fastapi import APIRouter
 from models import Club as PG_club
+
 
 class Club(BaseModel):
     club_name: str
 
+
 router = APIRouter(
     prefix='/clubs'
 )
+
+
+@router.get('/')
+def get_clubs():
+    """Get all clubs"""
+    clubs = PG_club.select().dicts()
+    return list(clubs)
+
 
 @router.post('/create')
 async def create(club: Club):
@@ -26,6 +35,7 @@ async def create(club: Club):
 
     return {'club': db_club.__data__}
 
+
 @router.get('/id/{club_id}')
 async def id_get(club_id: str):
     """Get club by club_id"""
@@ -35,6 +45,7 @@ async def id_get(club_id: str):
         return {'message': f'Club with id \'{club_id}\' not found'}
 
     return {'club': db_club.__data__}
+
 
 @router.get('/name/{club_name}')
 async def name_get(club_name: str):
