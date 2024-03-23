@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 import datetime
-from peewee import Model, PostgresqlDatabase, SQL, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
+from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
 
 config = dotenv_values()
 db = PostgresqlDatabase(
@@ -81,9 +81,7 @@ class JoinRequest(BaseModel):
     username = ForeignKeyField(User, backref="join_requests")
 
     class Meta:
-        indexes = (
-            (('club_id', 'username'), True),
-        )
+        indexes = ((("club_id", "username"), True),)
 
 
 db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested, JoinRequest])
