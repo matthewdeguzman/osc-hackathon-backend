@@ -16,7 +16,7 @@ router = APIRouter(
 class PostCreate(BaseModel):
     title: str
     content: str
-    club_name: str | None = None
+    club_name: str
     community: str | None = None
 
 

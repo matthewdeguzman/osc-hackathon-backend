@@ -46,7 +46,7 @@ class Post(BaseModel):
     author = TextField()
     title = TextField()
     content = TextField()
-    club_name = ForeignKeyField(Club, field='club_name', backref='posts', null=True)
+    club_name = ForeignKeyField(Club, field='club_name', backref='posts')
     community = TextField(null=True)
     created_at = DateTimeField(default=datetime.datetime.now)
 
