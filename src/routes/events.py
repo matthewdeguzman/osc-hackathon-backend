@@ -61,6 +61,16 @@ async def create(event: Event, user: Annotated[User, Depends(get_current_user)],
     return {"event": db_event.__data__}
 
 
+@router.get("")
+async def get_events(id: str):
+    """Get all events"""
+    try:
+        events = pg_event.select().dicts()
+    except DoesNotExist:
+        return {"message": "Events not found"}
+    return {"event": list(events)}
+
+
 @router.get("/event_id")
 async def get_event(id: str):
     """Get event by event_id"""
