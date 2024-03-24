@@ -14,6 +14,7 @@ from models import User as pg_user
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="/login/sign-in", scheme_name="JWT")
 
+
 async def get_current_user(token: Annotated[str, Depends(oauth_scheme)]):
     try:
         payload = jwt.decode(
