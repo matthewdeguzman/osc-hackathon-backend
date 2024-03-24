@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 import os
 
-from routes import login, clubs, events, posts
+from routes import login, clubs, events, posts, users
 
 load_dotenv()
 
@@ -26,6 +26,7 @@ app.include_router(login.router)
 app.include_router(clubs.router)
 app.include_router(events.router)
 app.include_router(posts.router)
+app.include_router(users.router)
 
 lambda_handler = Mangum(app)
 
