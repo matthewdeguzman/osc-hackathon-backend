@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from peewee import DoesNotExist, IntegrityError
 from utils import create_access_token
 
-from models import User as pg_user, Affiliation as pg_affiliation
+from models import User as pg_user, Affiliation as pg_affiliation, Club as pg_club
 
 router = APIRouter(prefix="/login")
 
@@ -42,6 +42,7 @@ async def sign_up(user: UserSignUp, res: Response):
         res.status_code = 400
         return {"error": "Username already exists"}
 
+
 @router.post("/sign-in")
 async def sign_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], res: Response):
     try:
@@ -51,7 +52,7 @@ async def sign_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], re
         return {"message": "Invalid username or password"}
 
     try:
-        affiliations = pg_affiliation.select().where(pg_affiliation.username == form_data.username).dicts()
+        affiliations = pg_affiliation.select(pg_affiliation.club_id, pg_club.club_name).join(pg_club).where(pg_affiliation.username == form_data.username).dicts()
         return {
             "affiliations": list(affiliations),
             "access_token": create_access_token(form_data.username),
