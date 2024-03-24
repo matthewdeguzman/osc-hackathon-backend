@@ -4,7 +4,7 @@ from uuid import uuid4
 from peewee import DoesNotExist, IntegrityError
 from pydantic import BaseModel
 from fastapi import APIRouter, Response, Depends
-from models import Club as Club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation, User, Affiliation
+from models import User, Affiliation, Club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation
 from deps import get_current_user
 
 class Club(BaseModel):
