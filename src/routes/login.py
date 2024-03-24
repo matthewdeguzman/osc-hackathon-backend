@@ -7,6 +7,7 @@ from peewee import DoesNotExist, IntegrityError
 from utils import create_access_token
 
 from models import User as pg_user, Affiliation as pg_affiliation, Club as pg_club
+from deps import get_current_user
 
 router = APIRouter(prefix="/login")
 
@@ -19,6 +20,11 @@ class UserSignUp(BaseModel):
 
 
 class UserSignIn(BaseModel):
+    username: str
+    password: str
+
+
+class User(BaseModel):
     username: str
     password: str
 
@@ -59,3 +65,9 @@ async def sign_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], re
         }
     except DoesNotExist:
         return []
+
+
+@router.get("/affiliations")
+async def get_affiliations(user: Annotated[User, Depends(get_current_user)], res: Response):
+    affiliations = pg_affiliation.select(pg_affiliation.club_id, pg_club.club_name).join(pg_club).where(pg_affiliation.username == user['username']).dicts()
+    return list(affiliations)
