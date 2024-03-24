@@ -34,11 +34,13 @@ async def sign_up(user: UserSignUp, res: Response):
         db_user = pg_user.create(
             username=user.username, password=user.password, first_name=user.firstName, last_name=user.lastName
         )
-        return {"user": db_user.username}
+        return {
+                "user": db_user.username,
+                "access_token": create_access_token(user.username),
+            }
     except IntegrityError:
         res.status_code = 400
         return {"error": "Username already exists"}
-
 
 @router.post("/sign-in")
 async def sign_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], res: Response):
