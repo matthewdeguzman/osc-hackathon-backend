@@ -172,7 +172,7 @@ async def toggle_interested(event_id: str,
 
 
 @router.get("/{event_id}/interested")
-async def get_interested(event_id: str, interested: Interested, user: Annotated[User, Depends(get_current_user)], res: Response):
+async def get_interested(event_id: str, user: Annotated[User, Depends(get_current_user)], res: Response):
     """Get all interested users for an event"""
     try:
         interested = pg_interested.select().where(pg_interested.event_id == event_id).dicts()
