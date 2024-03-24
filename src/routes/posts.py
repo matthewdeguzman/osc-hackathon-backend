@@ -62,3 +62,29 @@ async def get_post(res: Response, post_id: str):
         return post
     except DoesNotExist:
         res.status_code = 404
+
+@router.delete('/{post_id}')
+async def delete_post(res: Response, post_id: str, user: Annotated[User, Depends(get_current_user)]):
+    try:
+        post = pg_post.select().where(pg_post.post_id == post_id).get()
+        if post.author != user['username']:
+            res.status_code = 403
+            return {'message': 'You are not the author of this post'}
+        post.delete_instance()
+        return {'message': 'Post deleted'}
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Post not found'}
+
+@router.delete('/{post_id}/comment/{comment_id}')
+async def delete_comment(res: Response, post_id: str, comment_id: str, user: Annotated[User, Depends(get_current_user)]):
+    try:
+        comment = pg_comment.select().where(pg_comment.comment_id == comment_id).get()
+        if comment.author != user['username']:
+            res.status_code = 403
+            return {'message': 'You are not the author of this comment'}
+        comment.delete_instance()
+        return {'message': 'Comment deleted'}
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': 'Comment not found'}
