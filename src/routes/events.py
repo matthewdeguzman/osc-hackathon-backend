@@ -68,7 +68,7 @@ async def get_events():
         events = pg_event.select().dicts()
     except DoesNotExist:
         return {"message": "Events not found"}
-    return {"event": list(events)}
+    return {"events": list(events)}
 
 
 @router.get("/event_id")
