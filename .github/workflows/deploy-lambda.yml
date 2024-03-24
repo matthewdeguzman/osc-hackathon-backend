@@ -26,7 +26,7 @@ jobs:
         run: zip -r9 ../osc-hackathon-lambda.zip . -x deps/\*
 
       - name: Zip Dependencies
-        working-directory: ./src
+        working-directory: ./src/deps
         run: zip -r9 ../../osc-hackathon-lambda.zip .
 
       - name: Configure AWS Credentials
