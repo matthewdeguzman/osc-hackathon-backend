@@ -74,7 +74,7 @@ class Event(BaseModel):
 
 class Interested(BaseModel):
     event_id = UUIDField()
-    club_id = UUIDField()
+    club_id = ForeignKeyField(Club, backref='interested')
     interestee = TextField()
 
     class Meta:

@@ -175,7 +175,7 @@ async def toggle_interested(event_id: str,
 async def get_interested(event_id: str, user: Annotated[User, Depends(get_current_user)], res: Response):
     """Get all interested users for an event"""
     try:
-        interested = pg_interested.select().where(pg_interested.event_id == event_id).dicts()
+        interested = pg_interested.select(pg_interested.club_id, pg_club.club_name).join(pg_club).where(pg_interested.event_id == event_id).dicts()
     except DoesNotExist:
         res.status_code = 404
         return {"message": "Event not found"}
