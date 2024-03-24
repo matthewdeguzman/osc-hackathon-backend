@@ -11,7 +11,7 @@ from deps import get_current_user
 
 
 class Event(BaseModel):
-    club_id: UUID4
+    club_name: str
     title: str
     description: str
     event_start: datetime
@@ -26,6 +26,7 @@ class EventUpdate(Event):
 class Interested(BaseModel):
     club_id: UUID4
 
+
 class User(BaseModel):
     username: str
     password: str
@@ -37,14 +38,22 @@ router = APIRouter(prefix="/events")
 @router.post("/create")
 async def create(event: Event, user: Annotated[User, Depends(get_current_user)], res: Response):
     """Create a new event"""
+    club_id = None
     try:
-        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == event.club_id).get()
+        club_id = pg_club.select().where(pg_club.club_name == event.club_name).get().club_id
+    except DoesNotExist:
+        res.status_code = 404
+        return {"message": "Club name not found"}
+
+    try:
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == club_id).get()
     except DoesNotExist:
         res.status_code = 400
         return {"message": "User is not affiliated with this club"}
 
     try:
-        db_event = pg_event.create(event_id=uuid4(), author=user['username'], **event.model_dump())
+        del event.club_name
+        db_event = pg_event.create(event_id=uuid4(), author=user['username'], club_id=club_id, **event.model_dump())
     except IntegrityError:
         res.status_code = 404
         return {"message": "club does not exist"}
@@ -78,7 +87,6 @@ async def get_club_events_by_name(name: str, res: Response):
     """Get all events for a club"""
     try:
         club_id = pg_club.select().where(pg_club.club_name == name).get().club_id
-        print(club_id)
     except DoesNotExist:
         res.status_code = 404
         return {"message": "Club name not found"}
@@ -151,6 +159,7 @@ async def toggle_interested(event_id: str,
     except IntegrityError:
         res.status_code = 500
         return
+
 
 @router.delete("/{event_id}")
 async def delete_event(event_id: str, user: Annotated[User, Depends(get_current_user)], res: Response):
