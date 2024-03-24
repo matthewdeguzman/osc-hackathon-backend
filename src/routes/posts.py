@@ -23,7 +23,7 @@ class CommentCreate(BaseModel):
     content: str
 
 
-@router.post('/')
+@router.post('')
 async def create_post(post: PostCreate, res: Response):
     try:
         created_post = pg_post.create(post_id=uuid4(), **post.dict())
@@ -33,7 +33,7 @@ async def create_post(post: PostCreate, res: Response):
         return {'error': str(e)}
 
 
-@router.get('/')
+@router.get('')
 async def get_posts(res: Response, community: str = ''):
     try:
         posts = pg_post.select().where(pg_post.community == community).dicts()

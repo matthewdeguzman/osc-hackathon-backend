@@ -1,13 +1,13 @@
-from dotenv import dotenv_values
 import datetime
+import os
+
 from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
 
-config = dotenv_values()
 db = PostgresqlDatabase(
-    config["POSTGRES_DB_NAME"],
-    user=config["POSTGRES_USERNAME"],
-    password=config["POSTGRES_PASSWORD"],
-    host=config["POSTGRES_HOST"],
+    os.environ['POSTGRES_DB_NAME'],
+    user=os.environ['POSTGRES_USERNAME'],
+    password=os.environ['POSTGRES_PASSWORD'],
+    host=os.environ['POSTGRES_HOST'],
 )
 db.connect()
 
@@ -27,7 +27,7 @@ class Affiliation(BaseModel):
     club_id = UUIDField()
 
     class Meta:
-        primary_key = CompositeKey("username", "club_id")
+        primary_key = CompositeKey('username', 'club_id')
 
 
 class User(BaseModel):
@@ -48,7 +48,7 @@ class Post(BaseModel):
 
 class Comment(BaseModel):
     comment_id = UUIDField(primary_key=True)
-    post_id = ForeignKeyField(Post, backref="comments")
+    post_id = ForeignKeyField(Post, backref='comments')
     author = TextField()
     content = TextField()
     created_at = DateTimeField(default=datetime.datetime.now)
@@ -56,7 +56,7 @@ class Comment(BaseModel):
 
 class Event(BaseModel):
     event_id = UUIDField(primary_key=True)
-    club_id = ForeignKeyField(Club, backref="events")
+    club_id = ForeignKeyField(Club, backref='events')
     author = TextField()
     title = TextField()
     description = TextField()
@@ -72,16 +72,16 @@ class Interested(BaseModel):
     interestee = TextField()
 
     class Meta:
-        primary_key = CompositeKey("event_id", "club_id")
+        primary_key = CompositeKey('event_id', 'club_id')
 
 
 class JoinRequest(BaseModel):
     request_id = UUIDField(primary_key=True)
-    club_id = ForeignKeyField(Club, backref="join_requests")
-    username = ForeignKeyField(User, backref="join_requests")
+    club_id = ForeignKeyField(Club, backref='join_requests')
+    username = ForeignKeyField(User, backref='join_requests')
 
     class Meta:
-        indexes = ((("club_id", "username"), True),)
+        indexes = ((('club_id', 'username'), True),)
 
 
 db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested, JoinRequest])

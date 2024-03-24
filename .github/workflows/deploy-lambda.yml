@@ -1,0 +1,41 @@
+name: Deploy Project
+
+on:
+  push:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: mkdir src/deps && pip install -r requirements.txt --no-deps --python-version 3.12 --platform=manylinux2014_aarch64 -t ./src/deps
+
+      - name: Zip Repository
+        working-directory: ./src
+        run: zip -r9 ../osc-hackathon-lambda.zip . -x deps/\*
+
+      - name: Zip Dependencies
+        working-directory: ./src/deps
+        run: zip -r9 ../../osc-hackathon-lambda.zip .
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Upload Zip
+        working-directory: .
+        run: aws lambda update-function-code --function-name osc-hackathon --zip-file fileb://osc-hackathon-lambda.zip > /dev/null

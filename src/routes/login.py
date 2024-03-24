@@ -22,6 +22,7 @@ class UserSignIn(BaseModel):
     username: str
     password: str
 
+
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
@@ -50,8 +51,8 @@ async def sign_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], re
     try:
         affiliations = pg_affiliation.select().where(pg_affiliation.username == form_data.username).dicts()
         return {
-                "affiliations": list(affiliations), 
-                "access_token": create_access_token(form_data.username), 
-                }
+            "affiliations": list(affiliations),
+            "access_token": create_access_token(form_data.username),
+        }
     except DoesNotExist:
         return []
