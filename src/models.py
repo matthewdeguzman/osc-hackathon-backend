@@ -56,6 +56,7 @@ class Comment(BaseModel):
     post_id = ForeignKeyField(Post, backref='comments')
     author = TextField()
     content = TextField()
+    club_name = ForeignKeyField(Club, field='club_name', backref='comments')
     created_at = DateTimeField(default=datetime.datetime.now)
 
 

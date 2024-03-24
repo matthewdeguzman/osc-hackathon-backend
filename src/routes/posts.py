@@ -22,6 +22,7 @@ class PostCreate(BaseModel):
 
 class CommentCreate(BaseModel):
     content: str
+    club_name: str
 
 
 @router.post('')
