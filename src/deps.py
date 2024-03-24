@@ -1,9 +1,9 @@
+import os
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
-from dotenv import dotenv_values
 from peewee import DoesNotExist
 
 from jose import jwt
@@ -11,14 +11,13 @@ from jose.exceptions import JWTError
 
 from models import User as pg_user
 
-config = dotenv_values()
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="/login/sign-in", scheme_name="JWT")
 
 async def get_current_user(token: Annotated[str, Depends(oauth_scheme)]):
     try:
         payload = jwt.decode(
-            token, config["JWT_SECRET_KEY"], algorithms=config["ALGORITHM"]
+            token, os.environ["JWT_SECRET_KEY"], algorithms=os.environ["ALGORITHM"]
         )
     except(JWTError, ValidationError) as exc:
         print(exc)

@@ -3,6 +3,8 @@ import os
 
 from peewee import Model, PostgresqlDatabase, UUIDField, DateTimeField, TextField, CompositeKey, ForeignKeyField
 
+from dotenv import load_dotenv
+load_dotenv()
 db = PostgresqlDatabase(
     os.environ['POSTGRES_DB_NAME'],
     user=os.environ['POSTGRES_USERNAME'],
