@@ -39,6 +39,7 @@ class Club(BaseModel):
     club_id = UUIDField(primary_key=True)
     club_name = TextField(unique=True)
     owner = ForeignKeyField(User, backref='clubs')
+    description = TextField(null=True)
 
 
 class Post(BaseModel):

@@ -4,11 +4,12 @@ from uuid import uuid4
 from peewee import DoesNotExist, IntegrityError
 from pydantic import BaseModel
 from fastapi import APIRouter, Response, Depends
-from models import Club as pg_club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation, User
+from models import Club as pg_club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation, User, Affiliation
 from deps import get_current_user
 
 class Club(BaseModel):
     club_name: str
+    description: str | None = None
 
 
 class Username(BaseModel):
@@ -34,6 +35,7 @@ async def create(res: Response, club: Club, user: Annotated[User, Depends(get_cu
         db_club = pg_club.create(
             club_id=uuid4(),
             club_name=club.club_name,
+            description=club.description,
             owner=user['username']
         )
     except IntegrityError:
@@ -51,6 +53,31 @@ async def create(res: Response, club: Club, user: Annotated[User, Depends(get_cu
 
     return {'club': db_club.__data__}
 
+
+@router.put('/{club_id}/update')
+async def update(res: Response, club_id: str, club: Club, user: Annotated[User, Depends(get_current_user)]):
+    """Update club information"""
+    try:
+        db_club = pg_club.select().where(pg_club.club_id == club_id).get()
+    except DoesNotExist:
+        res.status_code = 404
+        return {'message': f'Club with id \'{club_id}\' not found'}
+
+    try:
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == club_id).get()
+    except DoesNotExist:
+        res.status_code = 400
+        return {"message": "User is not affiliated with this club"}
+
+    try:
+        db_club.club_name = club.club_name
+        db_club.description = club.description
+        db_club.save()
+    except IntegrityError:
+        res.status_code = 400
+        return {'message': 'Club name already exists'}
+
+    return {'club': db_club.__data__}
 
 @router.get('/id/{club_id}')
 async def get_by_id(res: Response, club_id: str):
