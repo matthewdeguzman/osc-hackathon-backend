@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 
-@router.get('/')
+@router.get('')
 def get_clubs():
     """Get all clubs"""
     clubs = pg_club.select().dicts()
