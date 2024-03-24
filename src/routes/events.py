@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+from typing import Annotated
 from uuid import uuid4
 from datetime import datetime
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response, Depends
 from pydantic import UUID4, BaseModel
 from peewee import DoesNotExist, IntegrityError
 
-from models import Event as pg_event, Club as pg_club, Interested as pg_interested
+from models import Event as pg_event, Club as pg_club, Interested as pg_interested, Affiliation
+from deps import get_current_user
 
 
 class Event(BaseModel):
@@ -24,7 +26,10 @@ class EventUpdate(Event):
 
 class Interested(BaseModel):
     club_id: UUID4
-    interestee: str
+
+class User(BaseModel):
+    username: str
+    password: str
 
 
 router = APIRouter(prefix="/events")
@@ -98,13 +103,24 @@ async def update_event(event: EventUpdate, res: Response):
 
 
 @router.post("/{event_id}/interested")
-async def toggle_interested(event_id: str, interested: Interested, res: Response):
+async def toggle_interested(event_id: str, 
+                            interested: Interested, 
+                            user: Annotated[User, Depends(get_current_user)],
+                            res: Response
+                            ):
     """Add a user to the interested list"""
     try:
         pg_event.select().where(pg_event.event_id == event_id).get()
     except DoesNotExist:
         res.status_code = 404
         return {"message": "Event not found"}
+
+    try:
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == interested.club_id).get()
+    except DoesNotExist:
+        res.status_code = 404
+        return {"message": "User is not affiliated with this club"}
+
     try:
         current_interest = (
             pg_interested.select()
@@ -117,7 +133,7 @@ async def toggle_interested(event_id: str, interested: Interested, res: Response
         pass
     try:
         interested = pg_interested.create(
-            event_id=event_id, club_id=interested.club_id, interestee=interested.interestee
+            event_id=event_id, club_id=interested.club_id, interestee=user['username']
         )
         return {"interested": interested.__data__}
     except IntegrityError:
