@@ -52,7 +52,7 @@ async def create(event: Event, user: Annotated[User, Depends(get_current_user)],
     return {"event": db_event.__data__}
 
 
-@router.get("/event_id/")
+@router.get("/event_id")
 async def get_event(id: str):
     """Get event by event_id"""
     try:
