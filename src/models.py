@@ -19,7 +19,6 @@ class BaseModel(Model):
         database = db
 
 
-
 class Affiliation(BaseModel):
     username = TextField()
     club_id = UUIDField()
@@ -47,6 +46,7 @@ class Post(BaseModel):
     author = TextField()
     title = TextField()
     content = TextField()
+    club_name = ForeignKeyField(Club, field='club_name', backref='posts')
     community = TextField(null=True)
     created_at = DateTimeField(default=datetime.datetime.now)
 
@@ -56,6 +56,7 @@ class Comment(BaseModel):
     post_id = ForeignKeyField(Post, backref='comments')
     author = TextField()
     content = TextField()
+    club_name = ForeignKeyField(Club, field='club_name', backref='comments')
     created_at = DateTimeField(default=datetime.datetime.now)
 
 
@@ -89,4 +90,4 @@ class JoinRequest(BaseModel):
         indexes = ((('club_id', 'username'), True),)
 
 
-db.create_tables([Club, Affiliation, User, Post, Comment, Event, Interested, JoinRequest])
+db.create_tables([Affiliation, Club, User, Post, Comment, Event, Interested, JoinRequest])

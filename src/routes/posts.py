@@ -16,11 +16,13 @@ router = APIRouter(
 class PostCreate(BaseModel):
     title: str
     content: str
+    club_name: str
     community: str | None = None
 
 
 class CommentCreate(BaseModel):
     content: str
+    club_name: str
 
 
 @router.post('')
@@ -36,8 +38,12 @@ async def create_post(post: PostCreate, user: Annotated[User, Depends(get_curren
 @router.get('')
 async def get_posts(res: Response, community: str = ''):
     try:
-        posts = pg_post.select().where(pg_post.community == community).dicts()
-        return list(posts)
+        if community == '':
+            posts = pg_post.select().dicts()
+            return list(posts)
+        else:
+            posts = pg_post.select().where(pg_post.community == community).dicts()
+            return list(posts)
     except Exception as e:
         res.status_code = 500
         return {'error': str(e)}
@@ -63,6 +69,7 @@ async def get_post(res: Response, post_id: str):
     except DoesNotExist:
         res.status_code = 404
 
+
 @router.delete('/{post_id}')
 async def delete_post(res: Response, post_id: str, user: Annotated[User, Depends(get_current_user)]):
     try:
@@ -75,6 +82,7 @@ async def delete_post(res: Response, post_id: str, user: Annotated[User, Depends
     except DoesNotExist:
         res.status_code = 404
         return {'message': 'Post not found'}
+
 
 @router.delete('/{post_id}/comment/{comment_id}')
 async def delete_comment(res: Response, post_id: str, comment_id: str, user: Annotated[User, Depends(get_current_user)]):
