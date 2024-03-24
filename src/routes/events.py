@@ -179,7 +179,12 @@ async def get_interested(event_id: str, interested: Interested, user: Annotated[
     except DoesNotExist:
         res.status_code = 404
         return {"message": "Event not found"}
-    return {"interested": list(interested)}
+    try:
+        pg_interested.select().where(pg_interested.event_id == event_id, pg_interested.interestee == user['username']).get()
+        am_interested = True
+    except DoesNotExist:
+        am_interested = False
+    return {"interested": list(interested), "am_interested": am_interested }
 
 
 @router.delete("/{event_id}")
