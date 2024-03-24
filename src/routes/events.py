@@ -151,3 +151,21 @@ async def toggle_interested(event_id: str,
     except IntegrityError:
         res.status_code = 500
         return
+
+@router.delete("/{event_id}")
+async def delete_event(event_id: str, user: Annotated[User, Depends(get_current_user)], res: Response):
+    """Delete an event"""
+    try:
+        event = pg_event.select().where(pg_event.event_id == event_id).get()
+    except DoesNotExist:
+        res.status_code = 404
+        return {"message": "Event not found"}
+
+    try:
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == event.club_id).get()
+    except DoesNotExist:
+        res.status_code = 400
+        return {"message": "User is not affiliated with this club"}
+
+    event.delete_instance()
+    return {"message": "Event deleted"}
