@@ -19,10 +19,6 @@ class BaseModel(Model):
         database = db
 
 
-class Club(BaseModel):
-    club_id = UUIDField(primary_key=True)
-    club_name = TextField(unique=True)
-
 
 class Affiliation(BaseModel):
     username = TextField()
@@ -37,6 +33,12 @@ class User(BaseModel):
     password = TextField()
     first_name = TextField()
     last_name = TextField()
+
+
+class Club(BaseModel):
+    club_id = UUIDField(primary_key=True)
+    club_name = TextField(unique=True)
+    owner = ForeignKeyField(User, backref='clubs')
 
 
 class Post(BaseModel):

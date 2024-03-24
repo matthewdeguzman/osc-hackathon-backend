@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-from fastapi import APIRouter, Response
+from typing import Annotated
+from fastapi import APIRouter, Response, Depends
 from pydantic import BaseModel
 from uuid import uuid4
 from peewee import DoesNotExist
 
-from models import Post as pg_post, Comment as pg_comment
+from models import Post as pg_post, Comment as pg_comment, User
+from deps import get_current_user
 
 router = APIRouter(
     prefix='/posts'
@@ -12,21 +14,19 @@ router = APIRouter(
 
 
 class PostCreate(BaseModel):
-    author: str
     title: str
     content: str
     community: str | None = None
 
 
 class CommentCreate(BaseModel):
-    author: str
     content: str
 
 
 @router.post('')
-async def create_post(post: PostCreate, res: Response):
+async def create_post(post: PostCreate, user: Annotated[User, Depends(get_current_user)], res: Response):
     try:
-        created_post = pg_post.create(post_id=uuid4(), **post.dict())
+        created_post = pg_post.create(post_id=uuid4(), author=user['username'], **post.dict())
         return created_post.__data__
     except Exception as e:
         res.status_code = 500
@@ -44,9 +44,9 @@ async def get_posts(res: Response, community: str = ''):
 
 
 @router.post('/{post_id}/comment')
-async def create_comment(post_id: str, comment: CommentCreate, res: Response):
+async def create_comment(post_id: str, comment: CommentCreate, user: Annotated[User, Depends(get_current_user)], res: Response):
     try:
-        created_comment = pg_comment.create(comment_id=uuid4(), post_id=post_id, **comment.dict())
+        created_comment = pg_comment.create(comment_id=uuid4(), post_id=post_id, author=user['username'], **comment.dict())
         return created_comment.__data__
     except Exception as e:
         res.status_code = 500

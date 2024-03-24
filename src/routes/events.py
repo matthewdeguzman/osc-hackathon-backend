@@ -12,7 +12,6 @@ from deps import get_current_user
 
 class Event(BaseModel):
     club_id: UUID4
-    author: str
     title: str
     description: str
     event_start: datetime
@@ -36,11 +35,18 @@ router = APIRouter(prefix="/events")
 
 
 @router.post("/create")
-async def create(user: Event):
+async def create(event: Event, user: Annotated[User, Depends(get_current_user)], res: Response):
     """Create a new event"""
     try:
-        db_event = pg_event.create(event_id=uuid4(), **user.model_dump())
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == event.club_id).get()
+    except DoesNotExist:
+        res.status_code = 400
+        return {"message": "User is not affiliated with this club"}
+
+    try:
+        db_event = pg_event.create(event_id=uuid4(), author=user['username'], **event.model_dump())
     except IntegrityError:
+        res.status_code = 404
         return {"message": "club does not exist"}
 
     return {"event": db_event.__data__}
@@ -86,8 +92,14 @@ async def get_club_events_by_name(name: str, res: Response):
 
 
 @router.put("/update")
-async def update_event(event: EventUpdate, res: Response):
+async def update_event(event: EventUpdate, user: Annotated[User, Depends(get_current_user)], res: Response):
     """Update an event"""
+    try:
+        Affiliation.select().where(Affiliation.username == user['username'], Affiliation.club_id == event.club_id).get()
+    except DoesNotExist:
+        res.status_code = 400
+        return {"message": "User is not affiliated with this club"}
+
     try:
         db_event = pg_event.select().where(pg_event.event_id == event.event_id).get()
         db_event.title = event.title
