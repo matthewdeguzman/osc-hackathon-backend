@@ -62,7 +62,7 @@ async def create(event: Event, user: Annotated[User, Depends(get_current_user)],
 
 
 @router.get("")
-async def get_events(id: str):
+async def get_events():
     """Get all events"""
     try:
         events = pg_event.select().dicts()
