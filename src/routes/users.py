@@ -15,13 +15,15 @@ router = APIRouter(prefix="/events")
 async def get_user_clubs(user: Annotated[User, Depends(get_current_user)], res: Response, username: str | None = None):
     """Return a list of clubs that a user is affiliated with"""
     try:
-        clubs = (Club
-         .select(Club)
-         .join(Affiliation, on=(Club.club_id == Affiliation.club_id))
-         .join(User, on=(User.username == Affiliation.username))
-         .where(User.username == (username or user['username'])))
+        User.select().where(User.username == (username or user['username'])).get()
     except DoesNotExist:
         res.status_code = 404
         return {"message": "User not found"}
+
+    clubs = (Club
+     .select(Club)
+     .join(Affiliation, on=(Club.club_id == Affiliation.club_id))
+     .join(User, on=(User.username == Affiliation.username))
+     .where(User.username == (username or user['username'])))
 
     return {"clubs": [club.__data__ for club in clubs]}
