@@ -4,7 +4,7 @@ from uuid import uuid4
 from peewee import DoesNotExist, IntegrityError
 from pydantic import BaseModel
 from fastapi import APIRouter, Response, Depends
-from models import Club as pg_club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation, User, Affiliation
+from models import Club as Club, JoinRequest as pg_joinrequest, Affiliation as pg_affiliation, User, Affiliation
 from deps import get_current_user
 
 class Club(BaseModel):
@@ -24,7 +24,7 @@ router = APIRouter(
 @router.get('')
 def get_clubs():
     """Get all clubs"""
-    clubs = pg_club.select().dicts()
+    clubs = Club.select().dicts()
     return {'clubs': list(clubs)}
 
 
@@ -32,7 +32,7 @@ def get_clubs():
 async def create(res: Response, club: Club, user: Annotated[User, Depends(get_current_user)]):
     """Create a new club"""
     try:
-        db_club = pg_club.create(
+        db_club = Club.create(
             club_id=uuid4(),
             club_name=club.club_name,
             description=club.description,
@@ -58,7 +58,7 @@ async def create(res: Response, club: Club, user: Annotated[User, Depends(get_cu
 async def update(res: Response, club_id: str, club: Club, user: Annotated[User, Depends(get_current_user)]):
     """Update club information"""
     try:
-        db_club = pg_club.select().where(pg_club.club_id == club_id).get()
+        db_club = Club.select().where(Club.club_id == club_id).get()
     except DoesNotExist:
         res.status_code = 404
         return {'message': f'Club with id \'{club_id}\' not found'}
@@ -84,7 +84,7 @@ async def update(res: Response, club_id: str, club: Club, user: Annotated[User, 
 async def get_by_id(res: Response, club_id: str):
     """Get club by club_id"""
     try:
-        db_club = pg_club.select().where(pg_club.club_id == club_id).get()
+        db_club = Club.select().where(Club.club_id == club_id).get()
     except DoesNotExist:
         res.status_code = 404
         return {'message': f'Club with id \'{club_id}\' not found'}
@@ -96,7 +96,7 @@ async def get_by_id(res: Response, club_id: str):
 async def get_by_name(res: Response, club_name: str):
     """Get club with club_name"""
     try:
-        db_club = pg_club.select().where(pg_club.club_name == club_name).get()
+        db_club = Club.select().where(Club.club_name == club_name).get()
     except DoesNotExist:
         res.status_code = 404
         return {'message': f'Club \'{club_name}\' not found'}
