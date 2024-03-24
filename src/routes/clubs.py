@@ -79,6 +79,7 @@ async def update(res: Response, club_id: str, club: Club, user: Annotated[User, 
 
     return {'club': db_club.__data__}
 
+
 @router.get('/id/{club_id}')
 async def get_by_id(res: Response, club_id: str):
     """Get club by club_id"""
